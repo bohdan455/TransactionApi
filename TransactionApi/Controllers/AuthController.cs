@@ -16,17 +16,14 @@ namespace TransactionApi.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IJwtTokenService _jwtTokenService;
-        private readonly SignInManager<User> _signInManager;
         private readonly ILogger<AuthController> _logger;
         private readonly UserManager<User> _userManager;
 
         public AuthController(IJwtTokenService jwtTokenService,
-            SignInManager<User> signInManager,
             ILogger<AuthController> logger,
             UserManager<User> userManager)
         {
             _jwtTokenService = jwtTokenService;
-            _signInManager = signInManager;
             _logger = logger;
             _userManager = userManager;
         }
@@ -34,18 +31,14 @@ namespace TransactionApi.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromForm] UserModel userModel)
         {
-
-            var result = await _signInManager.PasswordSignInAsync(userModel.Email,
-                               userModel.Password, false, lockoutOnFailure: true);
-            if (result.Succeeded)
+            var user = await _userManager.FindByEmailAsync(userModel.Email);
+            var result = await _userManager.CheckPasswordAsync(user,
+                               userModel.Password);
+            if (result)
             {
                 _logger.LogInformation("User logged in.");
                 var token = await _jwtTokenService.GenerateJSONWebToken(userModel);
                 return Ok( new { token } );
-            }
-            else if (result.IsLockedOut)
-            {
-                return BadRequest("User account locked out.");
             }
             else
             {
