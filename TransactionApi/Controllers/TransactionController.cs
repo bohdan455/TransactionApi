@@ -6,7 +6,7 @@ namespace TransactionApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(JwtBearerDefaults.AuthenticationScheme)]
+    [Authorize]
     public class TransactionController : ControllerBase
     {
         [HttpGet]
