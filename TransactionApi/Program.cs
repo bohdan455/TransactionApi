@@ -1,3 +1,5 @@
+using BLL.Services.Interfaces;
+using BLL.Services.Realizations;
 using DataAccess;
 using DataAccess.Entities;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -52,6 +54,7 @@ builder.Services.AddDbContext<ApplicationContext>(options =>
 
 
 builder.Services.AddSingleton<IJwtTokenService, JwtTokenService>();
+builder.Services.AddTransient<IExcelService, ExcelService>();
 
 var app = builder.Build();
 

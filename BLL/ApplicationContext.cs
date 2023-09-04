@@ -11,6 +11,12 @@ namespace DataAccess
 {
     public class ApplicationContext : IdentityDbContext<User>
     {
+        public DbSet<Transaction> Transactions { get; set; }
+
+        public DbSet<TransactionStatus> TransactionStatuses { get; set; }
+
+        public DbSet<TransactionType> TransactionTypes { get; set; }
+
         public ApplicationContext(DbContextOptions<ApplicationContext> options) : base(options)
         {
 

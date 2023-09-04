@@ -10,4 +10,8 @@
     <ProjectReference Include="..\BLL\DataAccess.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="ClosedXML" Version="0.102.1" />
+  </ItemGroup>
+
 </Project>
