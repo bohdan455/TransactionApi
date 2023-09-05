@@ -1,7 +1,9 @@
-﻿namespace BLL.Services.Interfaces
+﻿using BLL.Dto;
+
+namespace BLL.Services.Interfaces
 {
     public interface IExcelService
     {
-        Task LoadFile(Stream file, string userId);
+        Task<List<TransactionDto>> LoadDataFromExcel(Stream file);
     }
 }

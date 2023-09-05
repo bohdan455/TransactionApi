@@ -21,5 +21,11 @@ namespace DataAccess
         {
 
         }
+
+        protected override void OnModelCreating(ModelBuilder builder)
+        {
+            base.OnModelCreating(builder);
+            builder.Entity<Transaction>().HasKey(t => new {t.Id, t.UserId });
+        }
     }
 }

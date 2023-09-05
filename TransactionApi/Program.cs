@@ -54,7 +54,9 @@ builder.Services.AddDbContext<ApplicationContext>(options =>
 
 
 builder.Services.AddSingleton<IJwtTokenService, JwtTokenService>();
-builder.Services.AddTransient<IExcelService, ExcelService>();
+builder.Services.AddSingleton<IExcelService, ExcelService>();
+builder.Services.AddTransient<ITransactionService, TransactionService>();
+builder.Services.AddTransient<ICSVService, CSVService>();
 
 var app = builder.Build();
 

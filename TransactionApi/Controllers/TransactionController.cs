@@ -13,13 +13,18 @@ namespace TransactionApi.Controllers
     [Authorize]
     public class TransactionController : ControllerBase
     {
-        private readonly IExcelService _excelService;
+        private readonly ITransactionService _transactionService;
         private readonly UserManager<User> _userManager;
+        private readonly ICSVService _cSVService;
 
-        public TransactionController(IExcelService excelService,UserManager<User> userManager)
+        public TransactionController(
+            ITransactionService transactionService,
+            UserManager<User> userManager,
+            ICSVService cSVService)
         {
-            _excelService = excelService;
+            _transactionService = transactionService;
             _userManager = userManager;
+            _cSVService = cSVService;
         }
 
         [HttpPost("LoadExcelFile")]
@@ -28,11 +33,38 @@ namespace TransactionApi.Controllers
             if (Path.GetExtension(file.FileName) == ".xlsx")
             {
                 var user = await _userManager.FindByNameAsync(User.Identity.Name);
-                await _excelService.LoadFile(file.OpenReadStream(), user.Id);
+                await _transactionService.LoadDataFromExcel(file.OpenReadStream(), user.Id);
                 return Ok();
             }
 
             return BadRequest("Accept only xlsx files");
+        }
+
+        [HttpPost("ChangeStatus")]
+        public async Task<IActionResult> ChangeStatus(int id, string status)
+        {
+            var user = await _userManager.FindByNameAsync(User.Identity.Name);
+            try
+            {
+                await _transactionService.ChangeStatus(id, user.Id, status);
+                return Ok();
+            }
+            catch ( ArgumentException)
+            {
+                return NotFound();
+            }
+            catch
+            {
+                return BadRequest();
+            }
+        }
+
+        [HttpGet("GetCsvFile")]
+        public async Task<IActionResult> GetCsvFile()
+        {
+            var user = await _userManager.FindByNameAsync(User.Identity.Name);
+            var file = await _cSVService.GetCsvFileStream(user.Id);
+            return File(file, "text/csv", "transactions.csv");
         }
     }
 }
