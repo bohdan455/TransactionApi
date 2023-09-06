@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using TransactionApi.Model;
 
 namespace TransactionApi.Controllers
 {
@@ -40,7 +41,7 @@ namespace TransactionApi.Controllers
             return BadRequest("Accept only xlsx files");
         }
 
-        [HttpPost("ChangeStatus")]
+        [HttpPut("ChangeStatus")]
         public async Task<IActionResult> ChangeStatus(int id, string status)
         {
             var user = await _userManager.FindByNameAsync(User.Identity.Name);
@@ -59,11 +60,21 @@ namespace TransactionApi.Controllers
             }
         }
 
-        [HttpGet("GetCsvFile")]
-        public async Task<IActionResult> GetCsvFile()
+        /// <summary>
+        /// Columns:
+        /// 0 - Id
+        /// 1 - ClientName
+        /// 2 - Status
+        /// 3 - Type
+        /// 4 - Amount
+        /// </summary>
+        /// <param name="сolumns"></param>
+        /// <returns></returns>
+        [HttpPost("GetCsvFile")]
+        public async Task<IActionResult> GetCsvFile(CSVFileModel CSVFileModel)
         {
             var user = await _userManager.FindByNameAsync(User.Identity.Name);
-            var file = await _cSVService.GetCsvFileStream(user.Id);
+            var file = await _cSVService.GetCsvFileStream(user.Id, CSVFileModel.Columns,CSVFileModel.Types,CSVFileModel.Status);
             return File(file, "text/csv", "transactions.csv");
         }
     }

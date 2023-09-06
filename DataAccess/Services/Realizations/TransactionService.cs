@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using BLL.Services.Interfaces;
 using DataAccess;
 using DataAccess.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace BLL.Services.Realizations
 {
@@ -62,6 +63,22 @@ namespace BLL.Services.Realizations
             _context.Transactions.Update(transaction);
             await _context.SaveChangesAsync();
         }   
+
+        public async Task<List<Transaction>> GetTransactions(string userId, List<string>? types = null, string? transactionStatus = null)
+        {
+            IQueryable<Transaction> transactionsQuery = _context.Transactions.Where(t => t.UserId == userId).Include(t => t.Status).Include(t => t.Type);
+            if (types != null)
+            {
+                transactionsQuery = transactionsQuery.Where(t => types.Contains(t.Type.Type));
+            }
+
+            if (transactionStatus != null)
+            {
+                transactionsQuery = transactionsQuery.Where(t => t.Status.Status == transactionStatus);
+            }
+
+            return await transactionsQuery.ToListAsync();
+        }
 
         private async Task<int> GetOrCreateTransactionStatus(string transactionStatus)
         {

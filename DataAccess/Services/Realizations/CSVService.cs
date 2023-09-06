@@ -1,5 +1,6 @@
 ﻿using BLL.Services.Interfaces;
 using DataAccess;
+using DataAccess.Entities;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -11,25 +12,40 @@ namespace BLL.Services.Realizations
 {
     public class CSVService : ICSVService
     {
-        private readonly ApplicationContext _context;
+        private readonly ITransactionService _transactionService;
 
-        public CSVService(ApplicationContext context)
+        public CSVService(ITransactionService transactionService)
         {
-            _context = context;
+            _transactionService = transactionService;
         }
 
-        public Task<Stream> GetCsvFileStream(string userId)
+        public async Task<Stream> GetCsvFileStream(string userId, List<int> columns, List<string>? types = null, string? transactionStatus = null)
         {
-            var transactions = _context.Transactions.Where(t => t.UserId == userId).Include(t => t.Status).Include(t => t.Type).ToList();
+            var transactions = await _transactionService.GetTransactions(userId, types, transactionStatus);
+
             var csv = new StringBuilder();
-            csv.AppendLine("Id,ClientName,Amount,Type,Status");
+
+            var hasId = columns.Contains(0);
+            var hasClientName = columns.Contains(1);
+            var hasStatus = columns.Contains(2);
+            var hasType = columns.Contains(3);
+            var hasAmount = columns.Contains(4);
+
+            csv.AppendLine($"{(hasId ? "Id," : "")}{(hasClientName ? "ClientName," : "")}{(hasStatus ? "Status," : "")}{(hasType ? "Type," : "")}{(hasAmount ? "Amount" : "")}");
             foreach (var transaction in transactions)
             {
-                csv.AppendLine($"{transaction.Id},{transaction.ClientName},${transaction.Amount},{transaction.Type.Type},{transaction.Status.Status}");
+                var id = hasId ? $"{transaction.Id}," : "";
+                var clientName = hasClientName ? $"{transaction.ClientName}," : "";
+                var status = hasStatus ? $"{transaction.Status.Status}," : "";
+                var type = hasType ? $"{transaction.Type.Type}," : "";
+                var amount = hasAmount ? $"${transaction.Amount}" : "";
+                
+                csv.AppendLine($"{id}{clientName}{status}{type}{amount}");
             }
 
             Stream stream = new MemoryStream(Encoding.UTF8.GetBytes(csv.ToString()));
-            return Task.FromResult(stream);
+            return stream;
         }
+
     }
 }
